@@ -1,0 +1,88 @@
+---
+- name: Install Git, Apache2, and net-tools
+  hosts: myvms
+  become: yes  # Use sudo to install packages
+  vars:
+    website_title: "Welcome to Our Engaging Website"  # The single variable for the title
+
+  tasks:
+    - name: Update APT package index
+      apt:
+        update_cache: yes
+
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+
+    - name: Install Apache2
+      apt:
+        name: apache2
+        state: present
+
+    - name: Install net-tools
+      apt:
+        name: net-tools
+        state: present
+
+    - name: Ensure Apache2 is started and enabled
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+    
+
+    # Task to create an engaging index.html
+    - name: Create engaging index.html for the website
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>{{ website_title }}</title>
+              <style>
+                  body {
+                      font-family: Arial, sans-serif;
+                      background-color: #f0f0f0;
+                      color: #333;
+                      text-align: center;
+                      margin-top: 50px;
+                  }
+                  h1 {
+                      color: #007BFF;
+                      font-size: 3em;
+                  }
+                  p {
+                      font-size: 1.2em;
+                  }
+                  .cta-button {
+                      background-color: #28a745;
+                      color: white;
+                      padding: 15px 25px;
+                      text-decoration: none;
+                      border-radius: 5px;
+                      font-size: 1.2em;
+                  }
+                  .cta-button:hover {
+                      background-color: #218838;
+                  }
+              </style>
+          </head>
+          <body>
+              <h1>Welcome to Our Engaging Website</h1>
+              <p>We are glad to have you here! Enjoy your stay.</p>
+              <a href="#" class="cta-button">Learn More</a>
+          </body>
+          </html>
+      notify:
+        - Restart Apache
+
+  handlers:
+    # Handler to restart Apache if the index.html file is updated
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
